@@ -1,0 +1,308 @@
+clear
+close all
+clc
+
+%% ==========================================================
+% STATISTICAL ANALYSIS - 10 SEEDS
+%
+% Order of seeds:
+% 0, 1, 2, 7, 13, 27, 42, 73, 101, 999
+%
+% Order of architectures:
+% 1 - LSTM
+% 2 - Elman
+% 3 - GRU
+% 4 - NARX
+% 5 - ESN
+%
+% Metric:
+% Global RMSE = mean(RMSE_h1, RMSE_h4)
+%
+% Statistical analysis:
+% - Mean Rank
+% - Friedman test
+% - Pairwise Wilcoxon signed-rank tests
+% - Holm correction for multiple comparisons
+%% ==========================================================
+
+
+%% ==========================================================
+% RMSE DATA
+%% ==========================================================
+
+RMSE_h1_LSTM = [ ...
+    0.4586 0.4807 0.3885 0.4339 0.4697 ...
+    0.4191 0.3936 0.4175 0.4865 0.4542];
+
+RMSE_h4_LSTM = [ ...
+    0.4163 0.4308 0.3991 0.4381 0.4083 ...
+    0.4367 0.3329 0.4637 0.4228 0.3883];
+
+
+RMSE_h1_Elman = [ ...
+    0.0707 0.0975 0.0363 0.1012 0.0567 ...
+    2.3418 0.1083 0.0836 0.1168 0.1090];
+
+RMSE_h4_Elman = [ ...
+    0.0629 0.0791 0.1336 0.0484 0.0523 ...
+    0.2523 0.0637 0.0702 0.2205 0.0906];
+
+
+RMSE_h1_GRU = [ ...
+    0.6835 0.6106 0.6383 0.5004 0.7292 ...
+    0.6594 0.7011 0.4672 0.7867 0.6549];
+
+RMSE_h4_GRU = [ ...
+    0.5420 0.5212 0.5053 0.6398 0.6881 ...
+    0.7302 0.7057 0.5177 0.5867 0.5498];
+
+
+RMSE_h1_NARX = [ ...
+    0.0071 0.0082 0.0076 0.0073 0.0064 ...
+    0.0146 0.0103 0.0071 0.0078 0.0074];
+
+RMSE_h4_NARX = [ ...
+    0.0050 0.0045 0.0039 0.0059 0.0049 ...
+    0.0082 0.0047 0.0041 0.0058 0.0082];
+
+
+RMSE_h1_ESN = [ ...
+    1.2798 1.1201 0.8475 0.9436 1.2011 ...
+    0.9029 0.7929 0.7737 0.9956 1.2200];
+
+RMSE_h4_ESN = [ ...
+    1.2484 1.0835 0.9123 0.9458 1.2966 ...
+    1.0251 0.9769 0.9416 1.0033 1.2151];
+
+
+%% ==========================================================
+% GLOBAL RMSE PER SEED
+%% ==========================================================
+
+RMSE_LSTM  = (RMSE_h1_LSTM  + RMSE_h4_LSTM)  / 2;
+RMSE_Elman = (RMSE_h1_Elman + RMSE_h4_Elman) / 2;
+RMSE_GRU   = (RMSE_h1_GRU   + RMSE_h4_GRU)   / 2;
+RMSE_NARX  = (RMSE_h1_NARX  + RMSE_h4_NARX)  / 2;
+RMSE_ESN   = (RMSE_h1_ESN   + RMSE_h4_ESN)   / 2;
+
+
+%% ==========================================================
+% DATA MATRIX
+%
+% Rows    = seeds
+% Columns = architectures
+%% ==========================================================
+
+RMSE_global = [ ...
+    RMSE_LSTM(:), ...
+    RMSE_Elman(:), ...
+    RMSE_GRU(:), ...
+    RMSE_NARX(:), ...
+    RMSE_ESN(:)];
+
+
+names = {'LSTM','Elman','GRU','NARX','ESN'};
+
+
+%% ==========================================================
+% MEAN RANK
+%
+% Rank 1 = lowest RMSE
+% Rank 5 = highest RMSE
+%% ==========================================================
+
+Ranks = tiedrank(RMSE_global')';
+
+MeanRank = mean(Ranks,1);
+
+
+fprintf('\n============================================\n');
+fprintf('MEAN RANK\n');
+fprintf('============================================\n');
+
+for i = 1:length(names)
+
+    fprintf('%-8s : %.2f\n', ...
+        names{i}, MeanRank(i));
+
+end
+
+
+%% ==========================================================
+% FRIEDMAN TEST
+%% ==========================================================
+
+[pFriedman,~,stats] = friedman(RMSE_global,1,'off');
+
+% Number of observations and architectures
+n = size(RMSE_global,1);
+k = size(RMSE_global,2);
+
+% Sum of ranks for each architecture
+Rj = sum(Ranks,1);
+
+% Friedman chi-square statistic
+chi2_Friedman = ...
+    (12/(n*k*(k+1))) * sum(Rj.^2) ...
+    - 3*n*(k+1);
+
+% Degrees of freedom
+df_Friedman = k - 1;
+
+
+fprintf('\n============================================\n');
+fprintf('FRIEDMAN TEST\n');
+fprintf('============================================\n');
+
+fprintf('Chi-square = %.4f\n', chi2_Friedman);
+fprintf('df         = %d\n', df_Friedman);
+fprintf('p-value    = %.6g\n', pFriedman);
+
+
+%% ==========================================================
+% PAIRWISE WILCOXON SIGNED-RANK TESTS
+%% ==========================================================
+
+fprintf('\n============================================\n');
+fprintf('PAIRWISE WILCOXON TESTS\n');
+fprintf('============================================\n');
+
+pairs = [];
+p_raw = [];
+pair_names = {};
+
+k_pair = 0;
+
+for i = 1:4
+
+    for j = i+1:5
+
+        k_pair = k_pair + 1;
+
+        [p,~,~] = signrank( ...
+            RMSE_global(:,i), ...
+            RMSE_global(:,j));
+
+        pairs(k_pair,:) = [i j];
+
+        p_raw(k_pair) = p;
+
+        pair_names{k_pair} = sprintf('%s vs %s', ...
+            names{i},names{j});
+
+        fprintf('%-18s p = %.6g\n', ...
+            pair_names{k_pair},p);
+
+    end
+
+end
+
+
+%% ==========================================================
+% HOLM CORRECTION
+%
+% Correction for the 10 pairwise comparisons
+%% ==========================================================
+
+[p_sorted,order] = sort(p_raw);
+
+m = length(p_raw);
+
+p_holm_sorted = zeros(size(p_sorted));
+
+for i = 1:m
+
+    p_holm_sorted(i) = ...
+        min(1,(m-i+1)*p_sorted(i));
+
+end
+
+% Ensure monotonicity
+for i = 2:m
+
+    p_holm_sorted(i) = max( ...
+        p_holm_sorted(i), ...
+        p_holm_sorted(i-1));
+
+end
+
+p_holm = zeros(size(p_raw));
+
+p_holm(order) = p_holm_sorted;
+
+
+%% ==========================================================
+% DISPLAY POST-HOC RESULTS
+%% ==========================================================
+
+fprintf('\n============================================\n');
+fprintf('HOLM-CORRECTED POST-HOC RESULTS\n');
+fprintf('============================================\n');
+
+fprintf('%-18s %-15s %-15s\n', ...
+    'Comparison','Raw p','Holm p');
+
+fprintf('--------------------------------------------\n');
+
+for k = 1:length(p_raw)
+
+    fprintf('%-18s %-15.6g %-15.6g\n', ...
+        pair_names{k}, ...
+        p_raw(k), ...
+        p_holm(k));
+
+end
+
+
+%% ==========================================================
+% SIGNIFICANCE AT ALPHA = 0.05
+%% ==========================================================
+
+alpha = 0.05;
+
+fprintf('\n============================================\n');
+fprintf('SIGNIFICANT PAIRWISE DIFFERENCES\n');
+fprintf('alpha = %.2f\n',alpha);
+fprintf('============================================\n');
+
+for k = 1:length(p_holm)
+
+    if p_holm(k) < alpha
+
+        fprintf('%-18s : SIGNIFICANT (p = %.6g)\n', ...
+            pair_names{k},p_holm(k));
+
+    else
+
+        fprintf('%-18s : NOT SIGNIFICANT (p = %.6g)\n', ...
+            pair_names{k},p_holm(k));
+
+    end
+
+end
+
+
+%% ==========================================================
+% OPTIONAL: DISPLAY GLOBAL RMSE FOR EACH SEED
+%% ==========================================================
+
+fprintf('\n============================================\n');
+fprintf('GLOBAL RMSE PER SEED\n');
+fprintf('============================================\n');
+
+fprintf('%5s %10s %10s %10s %10s %10s\n', ...
+    'Seed','LSTM','Elman','GRU','NARX','ESN');
+
+seed_values = [0 1 2 7 13 27 42 73 101 999];
+
+for i = 1:10
+
+    fprintf('%5d %10.4f %10.4f %10.4f %10.4f %10.4f\n', ...
+        seed_values(i), ...
+        RMSE_global(i,1), ...
+        RMSE_global(i,2), ...
+        RMSE_global(i,3), ...
+        RMSE_global(i,4), ...
+        RMSE_global(i,5));
+
+end
