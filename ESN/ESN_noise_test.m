@@ -1,73 +1,55 @@
-clear; close all; clc;
+%% ================== TEST ESN CON RUIDO ==================
+clear;
+close all;
+clc;
 
-rng(42,'twister'); % Reproducibility
-
-%% ================== LOAD MODEL ==================
-
-load('esn_best_model.mat');   % contains best, C, S
+%% CARGA DEL MODELO Y LOS DATOS
+load('esn_best_model.mat');
 load('dataset_test.mat');
 
-%% ================== NORMALIZATION ==================
+%% NORMALIZACIÓN
+datasetn = normalize(dataset, "center", C, "scale", S);
 
-datasetn = normalize(dataset,"center",C,"scale",S);
+%% RUIDO REPRODUCIBLE: SOLO EN LAS ENTRADAS
+rng(42,'twister');
+noise_levels = [0.01 0.05];
+noise_base = randn(size(datasetn(:,1:2)));
 
-%% ================== NOISE LEVELS ==================
-
-noise_levels = [0.01 0.05];   % 1% and 5%
-
-%% ================== ESN PARAMETERS ==================
+%% PARÁMETROS
 N_res = size(Win,1);
-lr   = 0.10;
-
+lr = leaking_rate;
 washout = 50;
 
-%% ================== NOISE LOOP ==================
-
+%% BUCLE PARA 1% Y 5%
 for n = 1:length(noise_levels)
 
     noise_level = noise_levels(n);
 
-    %% ----- Add noise ONLY to the inputs -----
-
+    % Añadir ruido a p y v; h1 y h4 permanecen limpios
     datasetn_noise = datasetn;
-
     datasetn_noise(:,1:2) = datasetn(:,1:2) + ...
-        noise_level*randn(size(datasetn(:,1:2)));
-
-    %% ----- Inputs and outputs -----
+        noise_level*noise_base;
 
     XTest = datasetn_noise(:,1:2)';
-    TTest = datasetn(:,3:4)';      % real outputs without noise
-
+    TTest = datasetn(:,3:4)';
     T_len = size(XTest,2);
 
-    %% ================== ESN SIMULATION ==================
-
+    %% SIMULACIÓN OSA CON TEACHER FORCING
     x = zeros(N_res,1);
-    %Y_prev = zeros(2,1);
-
-    X_reservoir = zeros(N_res,T_len);
-    Y_pred_all  = zeros(2,T_len);
+    Y_prev = zeros(2,1);
+    Y_pred_all = zeros(2,T_len);
 
     for t = 1:T_len
-
-        %u_aug = [XTest(:,t); Y_prev; 1];
-        u_aug = [XTest(:,t); TTest(:,t); 1];
-
+        u_aug = [XTest(:,t); Y_prev; 1];
         x = (1-lr)*x + lr*tanh(Win*u_aug + W*x);
 
-        X_reservoir(:,t) = x;
+        Y_pred_all(:,t) = Wout*[x; XTest(:,t); 1];
 
-        y = Wout * [x; XTest(:,t); 1];
-
-        Y_pred_all(:,t) = y;
-
-        %Y_prev = y;
-
+        % Usar la salida real limpia para el paso siguiente
+        Y_prev = TTest(:,t);
     end
 
-    %% ================== DENORMALIZATION ==================
-
+    %% DESNORMALIZACIÓN
     Y_pred = zeros(2,T_len);
     Y_true = zeros(2,T_len);
 
@@ -77,106 +59,42 @@ for n = 1:length(noise_levels)
     Y_true(1,:) = TTest(1,:)*S(3) + C(3);
     Y_true(2,:) = TTest(2,:)*S(4) + C(4);
 
-    %% ================== WASHOUT ==================
-
+    %% WASHOUT
     Y_pred = Y_pred(:,washout:end);
     Y_true = Y_true(:,washout:end);
 
-    %% ================== ERRORS ==================
-
-    err_h1 = Y_true(1,:) - Y_pred(1,:);
-    err_h4 = Y_true(2,:) - Y_pred(2,:);
-
-    %% ================== METRICS h1 ==================
-
-    mse_h1   = mean(err_h1.^2);
-    rmse_h1  = sqrt(mse_h1);
-    mae_h1   = mean(abs(err_h1));
-    medae_h1 = median(abs(err_h1));
-
-    r2_h1 = 1 - sum(err_h1.^2) / ...
-        sum((Y_true(1,:) - mean(Y_true(1,:))).^2);
-
-    da_h1 = mean(sign(diff(Y_true(1,:))) == ...
-                 sign(diff(Y_pred(1,:)))) * 100;
-
-    %% ================== METRICS h4 ==================
-
-    mse_h4   = mean(err_h4.^2);
-    rmse_h4  = sqrt(mse_h4);
-    mae_h4   = mean(abs(err_h4));
-    medae_h4 = median(abs(err_h4));
-
-    r2_h4 = 1 - sum(err_h4.^2) / ...
-        sum((Y_true(2,:) - mean(Y_true(2,:))).^2);
-
-    da_h4 = mean(sign(diff(Y_true(2,:))) == ...
-                 sign(diff(Y_pred(2,:)))) * 100;
-
-    %% ================== RESULTS ==================
-
+    %% MÉTRICAS
     fprintf('\n=====================================\n');
-    fprintf('NOISE LEVEL = %.0f %%\n',noise_level*100);
+    fprintf('TEST ESN CON RUIDO: %.0f %%\n',noise_level*100);
     fprintf('=====================================\n');
 
-    fprintf('\n--- h1 ---\n');
-    fprintf('MSE   : %.6f\n', mse_h1);
-    fprintf('RMSE  : %.6f\n', rmse_h1);
-    fprintf('MAE   : %.6f\n', mae_h1);
-    fprintf('MedAE : %.6f\n', medae_h1);
-    fprintf('R2    : %.6f\n', r2_h1);
-    fprintf('DA    : %.2f %%\n', da_h1);
+    for k = 1:2
 
-    fprintf('\n--- h4 ---\n');
-    fprintf('MSE   : %.6f\n', mse_h4);
-    fprintf('RMSE  : %.6f\n', rmse_h4);
-    fprintf('MAE   : %.6f\n', mae_h4);
-    fprintf('MedAE : %.6f\n', medae_h4);
-    fprintf('R2    : %.6f\n', r2_h4);
-    fprintf('DA    : %.2f %%\n', da_h4);
+        % Error
+        e = Y_true(k,:) - Y_pred(k,:);
 
-    %% ================== FFT ==================
+        % Métricas de precisión
+        rmse_k = sqrt(mean(e.^2));
+        mae_k = mean(abs(e));
+        medae_k = median(abs(e));
 
-    FFT_real_h1 = fft(Y_true(1,:));
-    FFT_pred_h1 = fft(Y_pred(1,:));
+        r2_k = 1 - sum(e.^2) / ...
+            sum((Y_true(k,:) - mean(Y_true(k,:))).^2);
 
-    fft_error_h1 = norm(abs(FFT_real_h1) - abs(FFT_pred_h1)) ...
-                 / norm(abs(FFT_real_h1));
+        % Directional Accuracy (%)
+        da_k = mean( ...
+            sign(diff(Y_true(k,:))) == ...
+            sign(diff(Y_pred(k,:))) ...
+            ) * 100;
 
-    FFT_real_h4 = fft(Y_true(2,:));
-    FFT_pred_h4 = fft(Y_pred(2,:));
+        if k == 1
+            label = 'h1';
+        else
+            label = 'h4';
+        end
 
-    fft_error_h4 = norm(abs(FFT_real_h4) - abs(FFT_pred_h4)) ...
-                 / norm(abs(FFT_real_h4));
-
-    fprintf('\nFFT Error h1 = %.6f\n', fft_error_h1);
-    fprintf('FFT Error h4 = %.6f\n', fft_error_h4);
-
-    %% ================== PLOTS ==================
-
-    figure;
-
-    subplot(2,1,1)
-    plot(Y_pred(1,:),'r','LineWidth',2); hold on
-    plot(Y_true(1,:),'b','LineWidth',2)
-    title(sprintf('h1 - Noise %.0f%%',noise_level*100))
-    legend('pred','true')
-    grid on
-
-    subplot(2,1,2)
-    plot(Y_pred(2,:),'g','LineWidth',2); hold on
-    plot(Y_true(2,:),'k','LineWidth',2)
-    title(sprintf('h4 - Noise %.0f%%',noise_level*100))
-    legend('pred','true')
-    grid on
-
+        fprintf(['%s -> RMSE: %.6f | MAE: %.6f | ' ...
+                 'MedAE: %.6f | R2: %.6f | DA: %.2f%%\n'], ...
+                 label, rmse_k, mae_k, medae_k, r2_k, da_k);
+    end
 end
-
-%% ================== RESERVOIR STATES ==================
-
-figure;
-plot(X_reservoir','LineWidth',1)
-title('Reservoir States')
-xlabel('Time Step')
-ylabel('Activation')
-grid on
