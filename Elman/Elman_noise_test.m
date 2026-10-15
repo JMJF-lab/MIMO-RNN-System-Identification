@@ -1,19 +1,17 @@
 %% ==========================
-% ELMAN SCRIPT WITH 1% AND 5% NOISE
+% Script ELMAN con ruido 1% y 5%
 %% ==========================
 clear
 close all
 clc
-
-rng(42,'twister');  % Reproducibility
-
+rng(42,'twister');
 load elm_net
 load C
 load S
 load dataset_test.mat
 
 %% =====================================================
-%  NOISE LEVELS
+%  NIVELES DE RUIDO
 %% =====================================================
 
 noise_levels = [0.01, 0.05];
@@ -27,26 +25,28 @@ for n = 1:length(noise_levels)
     fprintf('==============================\n');
 
     %% =====================================================
-    %  NORMALIZATION
+    %  NORMALIZACIÓN
     %% =====================================================
 
-    datasetn = normalize(datasetn,"center",C,"scale",S);
+    datasetn = normalize(dataset,"center",C,"scale",S);
 
     %% =====================================================
-    %  ADD NOISE
+    %  AÑADIR RUIDO
     %% =====================================================
 
-    datasetn_noise = datasetn + noise_level * randn(size(datasetn));
+    % Generar una única realización base para ambos niveles de ruido
+    if n == 1
+        noise_base = randn(size(datasetn(:,1:2)));
+    end
+
+    % Añadir ruido solo a las entradas p y v
+    XTest = (datasetn(:,1:2) + noise_level * noise_base)';
+
+    % Mantener limpias las salidas reales h1 y h4
+    TTest = datasetn(:,3:4)';
 
     %% =====================================================
-    %  INPUTS AND TARGETS
-    %% =====================================================
-
-    XTest = [datasetn_noise(:,1) datasetn_noise(:,2)]';
-    TTest = [datasetn_noise(:,3) datasetn_noise(:,4)]';
-
-    %% =====================================================
-    %  ELMAN PREDICTION
+    %  PREDICCIÓN ELMAN
     %% =====================================================
 
     uTest = num2cell(XTest,1);
@@ -56,7 +56,7 @@ for n = 1:length(noise_levels)
     yTest_mat = cell2mat(yTest);
 
     %% =====================================================
-    %  DENORMALIZATION
+    %  DESNORMALIZACIÓN
     %% =====================================================
 
     YTest(:,1) = yTest_mat(1,:)' * S(3) + C(3);
@@ -66,7 +66,7 @@ for n = 1:length(noise_levels)
     TTest_denorm(:,2) = TTest(2,:)' * S(4) + C(4);
 
     %% =====================================================
-    %  h1 FIGURE
+    %  FIGURA h1
     %% =====================================================
 
     f1 = figure;
@@ -106,7 +106,7 @@ for n = 1:length(noise_levels)
         '-dpng','-r600');
 
     %% =====================================================
-    %  h4 FIGURE
+    %  FIGURA h4
     %% =====================================================
 
     f2 = figure;
@@ -146,7 +146,7 @@ for n = 1:length(noise_levels)
         '-dpng','-r600');
 
     %% =====================================================
-    %  h1 METRICS
+    %  MÉTRICAS h1
     %% =====================================================
 
     mse_h1 = mean((TTest_denorm(:,1)-YTest(:,1)).^2);
@@ -169,7 +169,7 @@ for n = 1:length(noise_levels)
     ) * 100;
 
     %% =====================================================
-    %  h4 METRICS
+    %  MÉTRICAS h4
     %% =====================================================
 
     mse_h4 = mean((TTest_denorm(:,2)-YTest(:,2)).^2);
@@ -192,7 +192,7 @@ for n = 1:length(noise_levels)
     ) * 100;
 
     %% =====================================================
-    %  DISPLAY RESULTS
+    %  MOSTRAR RESULTADOS
     %% =====================================================
 
     fprintf('\n--- h1 ---\n');
