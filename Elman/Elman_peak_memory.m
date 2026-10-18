@@ -5,7 +5,7 @@ system('echo $! > /tmp/elman_memory_pid');
 disp('>> Monitor iniciado. Entrenando Elman...');
 
 try
-    % 2. Ejecutar tu script de entrenamiento de Elman (SIN el .m)
+    % 2. Ejecutar tu script de entrenamiento de Elman
     aa_entrenar_Elman; 
     disp('>> ¡Entrenamiento de Elman finalizado con éxito!');
 catch ME
