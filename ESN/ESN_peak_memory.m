@@ -6,8 +6,8 @@ disp('>> Monitor iniciado. Entrenando ESN...');
 
 tic; % Iniciar cronómetro
 try
-    % 2. Ejecuta aquí tu script de entrenamiento de la ESN (ej. aa_entrenar_ESN)
-    aa_entrenar_ESN; 
+    % 2. Ejecutar el script de entrenamiento de la ESN
+    aaa_entrenarESN_mejor_param; 
     trainingTime = toc;
     disp(['>> ¡Entrenamiento de ESN finalizado con éxito! Tiempo: ', num2str(trainingTime), ' s']);
 catch ME
