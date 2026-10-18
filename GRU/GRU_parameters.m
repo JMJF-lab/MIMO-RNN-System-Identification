@@ -1,4 +1,4 @@
-load('net.mat'); % O tu objeto de red entrenado
+load('net.mat'); 
 total_params = 0;
 
 if isprop(net, 'Learnables') || isfield(net, 'Learnables')
