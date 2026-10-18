@@ -2,10 +2,10 @@
 [~, pid_str] = system('echo $$'); pid = strtrim(pid_str);
 system(sprintf('while true; do ps -p %s -o rss=; sleep 0.5; done 2>/dev/null > /tmp/elman_memory_log.txt &', pid));
 system('echo $! > /tmp/elman_memory_pid');
-disp('>> Monitor iniciado. Entrenando Elman (proceso largo)...');
+disp('>> Monitor iniciado. Entrenando Elman...');
 
 try
-    % 2. Ejecutar tu script de entrenamiento de Elman
+    % 2. Ejecutar tu script de entrenamiento de Elman (SIN el .m)
     aa_entrenar_Elman; 
     disp('>> ¡Entrenamiento de Elman finalizado con éxito!');
 catch ME
@@ -29,8 +29,7 @@ if fid ~= -1
         fprintf('>> Elman Peak RSS (MATLAB) (MB): %.2f MB\n', peak_mb);
         fprintf('========================================\n');
     else
-        disp('>> El log está vacío. Usando medición directa del proceso actual...');
-        % Fallback de seguridad si el log fallara
+        % Fallback de seguridad midiendo el proceso actual
         pid = feature('getpid');
         [~, cmdout] = system(sprintf('ps -o rss= -p %d', pid));
         peak_mb = str2double(strtrim(cmdout)) / 1024;
