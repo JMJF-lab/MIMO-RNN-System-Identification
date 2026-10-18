@@ -1,4 +1,4 @@
-load('net_esn.mat'); % Debe contener Wout (y opcionalmente bias)
+load('esn_best_model.mat'); % Debe contener Wout (y opcionalmente bias)
 
 total_params = numel(Wout);
 if exist('bias_out', 'var')
