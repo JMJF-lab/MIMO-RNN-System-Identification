@@ -1,4 +1,4 @@
-load('net_elman.mat');
+load('elm_net.mat');
 total_params = 0;
 
 for r = 1:size(net.IW, 1)
