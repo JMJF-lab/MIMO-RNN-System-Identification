@@ -5,19 +5,19 @@ clc
 rng(42,'twister');
 
 %% ============================
-% Test NARX con delay = 1 paso
-% OPEN-LOOP (mismo protocolo que LSTM)
+% NARX test with a one-step delay
+% OPEN-LOOP
 %% ============================
 
 delay = 1;
 
-%% Cargar red y datos
+%% Load network and data
 load net net
 load C
 load S
 load dataset_test.mat
 
-%% Normalizar dataset
+%% Normalize dataset
 datasetn = normalize(dataset,"center",C,"scale",S);
 
 inicio = 1;
@@ -25,16 +25,16 @@ inicio = 1;
 XTest = [datasetn(inicio:end,1), datasetn(inicio:end,2)];
 TTest = [datasetn(inicio:end,3), datasetn(inicio:end,4)];
 
-%% Aplicar retardo en entradas
+%% Apply input delays
 XTest_delay = [zeros(delay,size(XTest,2)); ...
                XTest(1:end-delay,:)];
 
-%% Convertir a formato de celdas
+%% Convert to cell array format
 Xcell = con2seq(XTest_delay');
 Tcell = con2seq(TTest');
 
 %% ============================
-% Predicción OPEN-LOOP
+% OPEN-LOOP prediction
 %% ============================
 
 [Xs,Xi,Ai,Ts] = preparets( ...
@@ -45,12 +45,12 @@ Tcell = con2seq(TTest');
 
 Ypred_n = net(Xs,Xi,Ai);
 
-%% Convertir a matriz
+%% Convert to matrix
 Ypred_mat = cell2mat(Ypred_n)';
 TTest_mat = cell2mat(Ts)';
 
 %% ============================
-% Desnormalización
+% Denormalization
 %% ============================
 
 YTest = zeros(size(Ypred_mat));
@@ -63,7 +63,7 @@ TTest_desnorm(:,1) = TTest_mat(:,1)*S(3) + C(3);
 TTest_desnorm(:,2) = TTest_mat(:,2)*S(4) + C(4);
 
 %% ============================
-% Figura
+% Figure
 %% ============================
 
 lw_plot  = 2.8;
@@ -138,7 +138,7 @@ grid on
 set(ax2,'FontSize',fs_axes,'LineWidth',lw_axes, ...
         'Box','on','TickLabelInterpreter','latex')
 
-%% Ajuste de figura
+%% Figure formatting
 drawnow
 
 ti1 = ax1.TightInset;
@@ -147,12 +147,12 @@ ax1.Position = [ti1(1),0.57,1-ti1(1)-ti1(3),0.32];
 ti2 = ax2.TightInset;
 ax2.Position = [ti2(1),0.10,1-ti2(1)-ti2(3),0.32];
 
-%% Exportar figura vectorial
+%% Export figure as vector graphics
 exportgraphics(f,'NARX_Prediction_h1_h4_delay1.pdf', ...
                'ContentType','vector');
 
 %% ============================
-% Métricas
+% Metrics
 %% ============================
 
 % h1
@@ -183,7 +183,7 @@ r2_h4 = 1 - sum(e4.^2)/ss_tot_h4;
 da_h4 = mean(sign(diff(h4_real)) == ...
              sign(diff(h4_pred)))*100;
 
-%% Mostrar resultados
+%% Display results
 fprintf('\n=== NARX TEST DELAY d=%d (OPEN-LOOP) ===\n',delay);
 
 fprintf('\n--- h1 ---\n');
