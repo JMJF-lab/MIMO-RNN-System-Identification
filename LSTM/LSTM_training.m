@@ -16,13 +16,11 @@ save S S; % Save normalization scale
 XTrain=[datasetn(:,1) datasetn(:,2);]; % Inputs: p (pump) and v (valve)
 TTrain=[datasetn(:,3) datasetn(:,4)]; % Outputs: h1 and h4 (tank levels)
 
-
 load dataset_validation.mat % Validation dataset
 dataset_validation_n = normalize(dataset, "center", C, "scale", S);
 
 XValidation=[dataset_validation_n(:,1) dataset_validation_n(:,2);]; % Inputs: p (pump) and v (valve)
 TValidation=[dataset_validation_n(:,3) dataset_validation_n(:,4)]; % Outputs: h1 and h4 (tank levels)
-
 
 % Define the network architecture
 numFeatures=size(XTrain,2);
@@ -34,7 +32,6 @@ layers = [ ...
     lstmLayer(numHiddenUnits,OutputMode="sequence")
     batchNormalizationLayer  % Batch normalization
     fullyConnectedLayer(numResponses)];
-
 
 % Specify training options
 maxEpochs = 1200;
@@ -53,12 +50,10 @@ options = trainingOptions("adam", ...
     Plots="training-progress", ...
     Verbose=0);
 
-
 % Train the network
 [net,info] = trainnet(XTrain,TTrain,layers,"mse",options);
 
 save net net
-
 
 %% ================= VALIDATION =================
 
@@ -70,8 +65,7 @@ YPredVal = gather(extractdata(YPredVal));
 % Compute prediction errors
 err = TValidation - YPredVal;
 
-
-%% h1
+%% PERFORMANCE METRICS: h1
 
 mse_h1_val   = mean(err(:,1).^2);
 rmse_h1_val  = sqrt(mse_h1_val);
@@ -84,8 +78,7 @@ SSres = sum((TValidation(:,1)-YPredVal(:,1)).^2);
 SStot = sum((TValidation(:,1)-mean(TValidation(:,1))).^2);
 R2_h1_val = 1 - SSres/SStot;
 
-
-%% h4
+%% PERFORMANCE METRICS: h4
 
 mse_h4_val   = mean(err(:,2).^2);
 rmse_h4_val  = sqrt(mse_h4_val);
@@ -98,8 +91,7 @@ SSres = sum((TValidation(:,2)-YPredVal(:,2)).^2);
 SStot = sum((TValidation(:,2)-mean(TValidation(:,2))).^2);
 R2_h4_val = 1 - SSres/SStot;
 
-
-%% Display results
+%% ================= DISPLAY VALIDATION RESULTS =================
 
 fprintf('\n===== VALIDATION (LSTM) =====\n\n');
 
