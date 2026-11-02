@@ -93,7 +93,7 @@ fprintf('\n===== FFT ERROR: DELAY d=1 =====\n');
 fprintf('FFT Error h1 = %.6f\n',fft_error_h1);
 fprintf('FFT Error h4 = %.6f\n',fft_error_h4);
 
-%% GRÁFICAS
+%% PLOTS
 figure;
 
 subplot(2,1,1);
