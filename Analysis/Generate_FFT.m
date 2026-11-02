@@ -28,14 +28,14 @@ errLow_h4 = FFT_h4 - CI_h4(:,1)';
 errUp_h4  = CI_h4(:,2)' - FFT_h4;
 
 %% =====================================================
-% FIGURE
+% FIGURE GENERATION
 %% =====================================================
 
 figure('Color','w')
 
 b = barh(FFT,'grouped');
 
-% Colores Q1
+% JOURNAL-STYLE COLORS
 b(1).FaceColor = [0.12 0.28 0.55];
 b(2).FaceColor = [0.10 0.45 0.40];
 
@@ -74,7 +74,7 @@ set(gca,'FontSize',18,...
         'TickLabelInterpreter','latex')
 
 %% =====================================================
-% POSICIÓN DE LAS BARRAS
+% BAR POSITIONING
 %% =====================================================
 
 nModels = size(FFT,1);
@@ -87,7 +87,7 @@ for i = 1:nSeries
     y = (1:nModels) - groupWidth/2 + (2*i-1)*groupWidth/(2*nSeries);
 
     %% ============================================
-    % Barras de error (95% BootCI)
+    % 95% BOOTSTRAP CONFIDENCE INTERVAL ERROR BARS
     %% ============================================
 
     if i==1
@@ -117,7 +117,7 @@ for i = 1:nSeries
     end
 
     %% ============================================
-    % Valores numéricos
+    % NUMERICAL VALUE LABELS
     %% ============================================
 
     for j = 1:nModels
@@ -147,7 +147,7 @@ set(gca,'FontSize',10,'LineWidth',1)
 hold off
 
 %% =====================================================
-% EXPORTAR PDF VECTORIAL
+% VECTOR PDF EXPORT
 %% =====================================================
 
 set(gcf,'Renderer','painters')
