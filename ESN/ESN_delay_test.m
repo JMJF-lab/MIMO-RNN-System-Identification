@@ -1,31 +1,31 @@
 
-%% ================== TEST ESN CON RETARDO d=1 ==================
+%% ================== TEST ESN WITH DELAY d=1 ==================
 clear;
 close all;
 clc;
 
-%% CARGA DEL MODELO Y LOS DATOS
+%% MODEL AND DATA LOADING
 load('esn_best_model.mat');
 load('dataset_test.mat');
 
-%% NORMALIZACIÓN
+%% NORMALIZATION
 datasetn = normalize(dataset, "center", C, "scale", S);
 
 XTest_raw = datasetn(:,1:2)';
 TTest_raw = datasetn(:,3:4)';
 
-%% ALINEACIÓN PARA RETARDO DE UN PASO
+%% ONE-STEP DELAY ALIGNMENT
 XTest = XTest_raw(:,1:end-1);
 TTest = TTest_raw(:,2:end);
 
 T_len = size(XTest,2);
 
-%% PARÁMETROS
+%% PARAMETERS
 N_res = size(Win,1);
 lr = leaking_rate;
 washout = 50;
 
-%% SIMULACIÓN OSA CON TEACHER FORCING
+%% OSA SIMULATION WITH TEACHER FORCING
 x = zeros(N_res,1);
 Y_prev = TTest_raw(:,1);
 Y_pred_all = zeros(2,T_len);
@@ -36,11 +36,11 @@ for t = 1:T_len
 
     Y_pred_all(:,t) = Wout*[x; XTest(:,t); 1];
 
-    % Salida objetivo real del instante alineado actual
+    % Ground-truth target output at the current aligned time step
     Y_prev = TTest(:,t);
 end
 
-%% DESNORMALIZACIÓN
+%% DENORMALIZATION
 Y_pred = zeros(2,T_len);
 Y_true = zeros(2,T_len);
 
@@ -53,7 +53,7 @@ Y_true(2,:) = TTest(2,:)*S(4) + C(4);
 Y_pred = Y_pred(:,washout:end);
 Y_true = Y_true(:,washout:end);
 
-%% MÉTRICAS POR SALIDA
+%% METRICS PER OUTPUT
 for k = 1:2
     e = Y_true(k,:) - Y_pred(k,:);
     mse_k = mean(e.^2);
