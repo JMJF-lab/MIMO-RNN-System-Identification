@@ -9,7 +9,7 @@ try
     % 2. Run the ESN training script
     ESN_training; 
     trainingTime = toc;
-    disp(['>> ¡ESN training completed successfully! Time:', num2str(trainingTime), ' s']);
+    disp(['>> ESN training completed successfully! Time:', num2str(trainingTime), ' s']);
 catch ME
     trainingTime = toc;
     disp(['>> Error: ', ME.message]);
