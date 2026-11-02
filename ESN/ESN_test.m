@@ -1,4 +1,4 @@
-%% ================== TEST ESTÁNDAR (ESN) ==================
+%% ================== STANDARD ESN TESTING ==================
 clear;
 close all;
 clc;
@@ -6,25 +6,25 @@ clc;
 load('esn_best_model.mat');
 load('dataset_test.mat');
 
-%% ================== NORMALIZACIÓN ==================
+%% ================== INPUT AND OUTPUT NORMALIZATION ==================
 datasetn = normalize(dataset, "center", C, "scale", S);
 XTest = datasetn(:,1:2)';
 TTest = datasetn(:,3:4)';
 
-%% ================== PARÁMETROS ==================
+%% ================== PARAMETERS ==================
 N_res = size(Win,1);
-lr    = leaking_rate;          % Usa el leaking_rate real del modelo
+lr    = leaking_rate;          % Use the actual leaking_rate from the trained model.
 T_len = size(XTest,2);
 
-%% ================== ESTADO Y CAUSALIDAD ==================
+%% ================== STATE INITIALIZATION AND CAUSALITY ==================
 x = zeros(N_res,1);
-Y_prev = zeros(2,1);           % Inicialización y(0) = 0
+Y_prev = zeros(2,1);           % Initialize y(0) = 0.
 X_reservoir = zeros(N_res,T_len);
 Y_pred_all  = zeros(2,T_len);
 
-%% ================== SIMULACIÓN ==================
+%% ================== MODEL SIMULATION ==================
 for t = 1:T_len
-    % Causalidad estricta y(t-1)
+    % Enforce strict causality by using the previous output, y(t-1).
     u_aug = [XTest(:,t); Y_prev; 1];
     
     x = (1-lr)*x + lr*tanh(Win*u_aug + W*x);
@@ -33,11 +33,11 @@ for t = 1:T_len
     y = Wout * [x; XTest(:,t); 1];
     Y_pred_all(:,t) = y;
     
-    % Teacher Forcing: actualizar Y_prev con la salida real target en t
+    % Teacher forcing: update Y_prev with the measured target at time t.
     Y_prev = TTest(:,t);
 end
 
-%% ================== DESNORMALIZACIÓN ==================
+%% ================== OUTPUT DENORMALIZATION ==================
 Y_pred = zeros(2,T_len);
 Y_true = zeros(2,T_len);
 Y_pred(1,:) = Y_pred_all(1,:)*S(3) + C(3);
@@ -50,12 +50,12 @@ washout = 50;
 Y_pred = Y_pred(:,washout:end);
 Y_true = Y_true(:,washout:end);
 
-%% ================== ERRORES ==================
+%% ================== PREDICTION ERRORS ==================
 err = Y_true - Y_pred;
 err_h1 = Y_true(1,:) - Y_pred(1,:);
 err_h4 = Y_true(2,:) - Y_pred(2,:);
 
-%% ================== MÉTRICAS GLOBALES ==================
+%% ================== GLOBAL PERFORMANCE METRICS ==================
 mse   = mean(err(:).^2);
 rmse  = sqrt(mse);
 mae   = mean(abs(err(:)));
@@ -63,7 +63,7 @@ medae = median(abs(err(:)));
 r2    = 1 - sum(err(:).^2) / sum((Y_true(:) - mean(Y_true(:))).^2);
 da    = mean(sign(diff(Y_true(:))) == sign(diff(Y_pred(:)))) * 100;
 
-%% ================== MÉTRICAS POR SALIDA ==================
+%% ================== PER-OUTPUT PERFORMANCE METRICS ==================
 % ---- h1 ----
 mse_h1   = mean(err_h1.^2);
 rmse_h1  = sqrt(mse_h1);
@@ -80,7 +80,7 @@ medae_h4 = median(abs(err_h4));
 r2_h4    = 1 - sum(err_h4.^2) / sum((Y_true(2,:) - mean(Y_true(2,:))).^2);
 da_h4    = mean(sign(diff(Y_true(2,:))) == sign(diff(Y_pred(2,:)))) * 100;
 
-%% ================== RESULTADOS ==================
+%% ================== TEST RESULTS ==================
 fprintf('\n=== TEST RESULTS (GLOBAL) ===\n');
 fprintf('RMSE  : %.6f\n', rmse);
 fprintf('MAE   : %.6f\n', mae);
