@@ -1,26 +1,26 @@
-%% ================== TEST ESN CON RUIDO ==================
+%% ================== ESN TEST WITH NOISE ==================
 clear;
 close all;
 clc;
 
-%% CARGA DEL MODELO Y LOS DATOS
+%% MODEL AND DATA LOADING
 load('esn_best_model.mat');
 load('dataset_test.mat');
 
-%% NORMALIZACIÓN
+%% NORMALIZATION
 datasetn = normalize(dataset, "center", C, "scale", S);
 
-%% RUIDO REPRODUCIBLE: SOLO EN LAS ENTRADAS
+%% REPRODUCIBLE NOISE: INPUTS ONLY
 rng(42,'twister');
 noise_levels = [0.01 0.05];
 noise_base = randn(size(datasetn(:,1:2)));
 
-%% PARÁMETROS
+%% PARAMETERS
 N_res = size(Win,1);
 lr = leaking_rate;
 washout = 50;
 
-%% BUCLE PARA 1% Y 5%
+%% LOOP FOR 1% AND 5%
 for n = 1:length(noise_levels)
 
     noise_level = noise_levels(n);
@@ -34,7 +34,7 @@ for n = 1:length(noise_levels)
     TTest = datasetn(:,3:4)';
     T_len = size(XTest,2);
 
-    %% SIMULACIÓN OSA CON TEACHER FORCING
+    %% OSA SIMULATION WITH TEACHER FORCING
     x = zeros(N_res,1);
     Y_prev = zeros(2,1);
     Y_pred_all = zeros(2,T_len);
@@ -45,11 +45,11 @@ for n = 1:length(noise_levels)
 
         Y_pred_all(:,t) = Wout*[x; XTest(:,t); 1];
 
-        % Usar la salida real limpia para el paso siguiente
+        % Use the clean ground-truth output for the next step
         Y_prev = TTest(:,t);
     end
 
-    %% DESNORMALIZACIÓN
+   %% DENORMALIZATION
     Y_pred = zeros(2,T_len);
     Y_true = zeros(2,T_len);
 
@@ -63,9 +63,9 @@ for n = 1:length(noise_levels)
     Y_pred = Y_pred(:,washout:end);
     Y_true = Y_true(:,washout:end);
 
-    %% MÉTRICAS
+    %% METRICS
     fprintf('\n=====================================\n');
-    fprintf('TEST ESN CON RUIDO: %.0f %%\n',noise_level*100);
+    fprintf('ESN TEST WITH NOISE: %.0f %%\n',noise_level*100);
     fprintf('=====================================\n');
 
     for k = 1:2
