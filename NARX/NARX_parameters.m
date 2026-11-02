@@ -23,4 +23,4 @@ for r = 1:numel(net.b)
     end
 end
 
-fprintf('>> Parámetros exactos (NARX): %d\n', total_params);
+fprintf('>> Exact Parameters (NARX): %d\n', total_params);
