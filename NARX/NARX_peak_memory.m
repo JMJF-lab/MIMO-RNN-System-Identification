@@ -1,24 +1,24 @@
-% 1. Arrancar el monitor de Unix limpio para NARX
+% 1. Start a clean Unix monitor for NARX.
 [~, pid_str] = system('echo $$'); pid = strtrim(pid_str);
 system(sprintf('while true; do ps -p %s -o rss=; sleep 0.5; done 2>/dev/null > /tmp/narx_memory_log.txt &', pid));
 system('echo $! > /tmp/narx_memory_pid');
 disp('>> Monitor iniciado. Entrenando NARX...');
 
-tic; % Iniciar cronómetro de entrenamiento
+tic; % Start the training timer.
 try
-    % 2. Ejecutar tu script de entrenamiento NARX (sin el .m)
+    % 2. Run the NARX training script (without the .m extension).
     aa_entrenar_NARX; 
     trainingTime = toc;
-    disp(['>> ¡Entrenamiento de NARX finalizado con éxito! Tiempo: ', num2str(trainingTime), ' s']);
+    disp(['>> NARX training completed successfully! Elapsed time: ', num2str(trainingTime), ' s']);
 catch ME
     trainingTime = toc;
     disp(['>> Error: ', ME.message]);
 end
 
-% 3. Detener el monitor y extraer el valor máximo con seguridad
+% 3. Stop the monitor and safely extract the maximum value.
 system('kill $(cat /tmp/narx_memory_pid) 2>/dev/null; rm -f /tmp/narx_memory_pid');
 
-% Leer el archivo de log línea por línea en MATLAB
+% Read the log file line by line in MATLAB.
 fid = fopen('/tmp/narx_memory_log.txt', 'r');
 if fid ~= -1
     raw_data = textscan(fid, '%f');
@@ -38,12 +38,12 @@ if fid ~= -1
         fprintf('>> NARX Current Process Memory (RSS): %.2f MB\n', peak_mb);
     end
 else
-    disp('>> No se pudo abrir el archivo de log.');
+    disp('>> Unable to open the log file.');
 end
 
-% 4. Obtener el tamaño del modelo en disco usando d.bytes
+% 4. Get the model size on disk using d.bytes.
 if exist('narx_best_model.mat', 'file')
     d = dir('narx_best_model.mat');
     narxSizeMB = d.bytes / (1024 * 1024);
-    fprintf('>> NARX Model Size (disco): %.5f MB\n', narxSizeMB);
+    fprintf('>> NARX Model Size (disk): %.5f MB\n', narxSizeMB);
 end
