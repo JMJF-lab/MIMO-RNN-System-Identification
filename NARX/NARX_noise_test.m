@@ -4,13 +4,13 @@ clc
 
 %% =====================================================
 % NARX ROBUSTNESS TEST - OPEN LOOP
-% Ruido en p,v; referencias h1,h4 limpias
+% Noise in p,v; clean h1,h4 reference signals
 %% =====================================================
 
-% Semilla exclusiva para generar ruido de test
+% Dedicated seed for test noise generation
 rng(42,'twister');
 
-%% CARGA DEL MODELO Y DATOS
+%% MODEL AND DATA LOADING
 load net net
 load C
 load S
@@ -21,10 +21,10 @@ datasetn = normalize(dataset,"center",C,"scale",S);
 noise_levels = [0.01 0.05];
 noise_labels = {'1%','5%'};
 
-% Una misma perturbación base para ambos niveles
+% The same base perturbation for both noise levels
 noise_base = randn(size(datasetn(:,1:2)));
 
-%% EVALUACIÓN
+%% EVALUATION
 for n = 1:length(noise_levels)
 
     ruido = noise_levels(n);
@@ -33,26 +33,26 @@ for n = 1:length(noise_levels)
     fprintf('NARX OPEN-LOOP - NOISE %s\n',noise_labels{n});
     fprintf('====================================\n');
 
-    % Añadir ruido SOLO a p y v
+    % Add noise only to p and v
     datasetn_noise = datasetn;
     datasetn_noise(:,1:2) = datasetn(:,1:2) + ruido*noise_base;
 
     XTest = datasetn_noise(:,1:2)';
     TTest = datasetn(:,3:4)';
 
-    % Preparar secuencias con los retardos de la red
+    % Prepare sequences using the network delays
     Xcell = con2seq(XTest);
     Tcell = con2seq(TTest);
 
     [Xs,Xi,Ai,Ts] = preparets(net,Xcell,{},Tcell);
 
-    % Predicción open-loop
+   % Open-loop prediction
     Ycell = net(Xs,Xi,Ai);
 
     Ypred = cell2mat(Ycell)';
     Tref  = cell2mat(Ts)';
 
-    % Desnormalizar
+    % Denormalize
     YTest = zeros(size(Ypred));
     TTest_desnorm = zeros(size(Tref));
 
@@ -62,7 +62,7 @@ for n = 1:length(noise_levels)
     TTest_desnorm(:,1) = Tref(:,1)*S(3) + C(3);
     TTest_desnorm(:,2) = Tref(:,2)*S(4) + C(4);
 
-    %% MÉTRICAS h1
+    %% h1 METRICS
     err_h1 = TTest_desnorm(:,1) - YTest(:,1);
 
     mse_h1   = mean(err_h1.^2);
@@ -77,7 +77,7 @@ for n = 1:length(noise_levels)
     da_h1 = mean(sign(diff(TTest_desnorm(:,1))) == ...
         sign(diff(YTest(:,1))))*100;
 
-    %% MÉTRICAS h4
+    %% h4 METRICS
     err_h4 = TTest_desnorm(:,2) - YTest(:,2);
 
     mse_h4   = mean(err_h4.^2);
@@ -92,7 +92,7 @@ for n = 1:length(noise_levels)
     da_h4 = mean(sign(diff(TTest_desnorm(:,2))) == ...
         sign(diff(YTest(:,2))))*100;
 
-    %% RESULTADOS
+    %% RESULTS
     fprintf('\nh1: MSE=%.6f | RMSE=%.6f | MAE=%.6f | MedAE=%.6f | R2=%.6f | DA=%.2f%%\n', ...
         mse_h1,rmse_h1,mae_h1,medae_h1,r2_h1,da_h1);
 
