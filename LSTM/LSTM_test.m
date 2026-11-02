@@ -29,7 +29,6 @@ CellState = lstmActivations{strcmp(lstmActivations.Parameter, 'CellState'), 'Val
 YTest(:,1)=YTestn{1}(:,1)*S(3)+C(3);
 YTest(:,2)=YTestn{1}(:,2)*S(4)+C(4);
 
-
 %% =====================================================
 %  SINGLE FIGURE – LSTM h1 AND h4
 % =====================================================
@@ -42,7 +41,6 @@ fs_axes  = 18;
 fs_label = 28;
 fs_title = 30;
 
-
 %% Extract signals
 
 h1_pred = YTest(:,1);             % LSTM prediction h1
@@ -50,7 +48,6 @@ h1_real = dataset(inicio:end,3);  % Real h1 data
 
 h4_pred = YTest(:,2);             % LSTM prediction h4
 h4_real = dataset(inicio:end,4);  % Real h4 data
-
 
 %% Journal-style vertical figure
 
@@ -62,7 +59,6 @@ f = figure('Units','inches', ...
            'Color','w', ...
            'ToolBar','none', ...
            'MenuBar','none');
-
 
 %% =====================================================
 %  Subplot 1 – h1
@@ -100,7 +96,6 @@ grid on
 set(ax1,'FontSize',fs_axes,'LineWidth',lw_axes,...
     'Box','on','TickLabelInterpreter','latex')
 
-
 %% =====================================================
 %  Subplot 2 – h4
 % =====================================================
@@ -137,7 +132,6 @@ grid on
 set(ax2,'FontSize',fs_axes,'LineWidth',lw_axes,...
     'Box','on','TickLabelInterpreter','latex')
 
-
 %% =====================================================
 %  Fine adjustment
 % =====================================================
@@ -150,32 +144,26 @@ ax1.Position = [ti1(1), 0.57, 1 - ti1(1) - ti1(3), 0.32];
 ti2 = ax2.TightInset;
 ax2.Position = [ti2(1), 0.10, 1 - ti2(1) - ti2(3), 0.32];
 
-
 %% Export vector figure
 
 exportgraphics(f,'LSTM_Prediction_h1_h4.pdf','ContentType','vector')
-
 
 % Denormalize TTest to match the scale of YTest
 
 TTest_desnorm(:,1) = TTest(:,1)*S(3) + C(3); % h1
 TTest_desnorm(:,2) = TTest(:,2)*S(4) + C(4); % h4
 
-
 % Mean squared error (MSE)
 
 mse_val1 = mean((TTest_desnorm(inicio:end,1) - YTest(inicio:end,1)).^2);
-
 
 % Root mean squared error (RMSE)
 
 rmse_val1 = rmse(TTest_desnorm(inicio:end,1), YTest(inicio:end,1));
 
-
 % Mean absolute error (MAE)
 
 mae_val1 = mean(abs(TTest_desnorm(inicio:end,1) - YTest(inicio:end,1)));
-
 
 % Coefficient of determination (R²)
 
@@ -188,21 +176,17 @@ fprintf("MSE_h1: %.4f\nRMSE_h1: %.4f\nMAE_h1: %.4f\nR2_h1: %.4f\n", mse_val1, rm
 linea = repmat('-', 1, 50); % Create a line of 50 dashes
 disp(linea);
 
-
 % Mean squared error (MSE)
 
 mse_val2 = mean((TTest_desnorm(inicio:end,2) - YTest(inicio:end,2)).^2);
-
 
 % Root mean squared error (RMSE)
 
 rmse_val2 = rmse(TTest_desnorm(inicio:end,2), YTest(inicio:end,2));
 
-
 % Mean absolute error (MAE)
 
 mae_val2 = mean(abs(TTest_desnorm(inicio:end,2) - YTest(inicio:end,2)));
-
 
 % Coefficient of determination (R²)
 
@@ -212,12 +196,10 @@ r2_val2 = 1 - (ss_res / ss_tot);
 
 fprintf("MSE_h4: %.4f\nRMSE_h4: %.4f\nMAE_h4: %.4f\nR2_h4: %.4f\n", mse_val2, rmse_val2, mae_val2, r2_val2);
 
-
 % Median absolute error (MedAE)
 
 medae_h1 = median(abs(TTest_desnorm(inicio:end,1) - YTest(inicio:end,1)));
 medae_h4 = median(abs(TTest_desnorm(inicio:end,2) - YTest(inicio:end,2)));
-
 
 % Directional Accuracy (DA)
 % Percentage of times the model correctly predicts the direction of change
@@ -235,7 +217,6 @@ da_h4 = mean(sign(delta_real_h4) == sign(delta_pred_h4)) * 100;
 fprintf('--- h1 ---\nMedAE: %.4f | DA: %.2f%%\n', medae_h1, da_h1);
 fprintf('--- h4 ---\nMedAE: %.4f | DA: %.2f%%\n', medae_h4, da_h4);
 
-
 %% =====================================================
 %  FFT ANALYSIS (Frequency-Domain Validation)
 % =====================================================
@@ -248,7 +229,6 @@ FFT_pred_h1 = fft(YTest(:,1));
 fft_error_h1 = norm(abs(FFT_real_h1) - abs(FFT_pred_h1)) ...
     / norm(abs(FFT_real_h1));
 
-
 % FFT h4
 
 FFT_real_h4 = fft(TTest_desnorm(:,2));
@@ -260,7 +240,6 @@ fft_error_h4 = norm(abs(FFT_real_h4) - abs(FFT_pred_h4)) ...
 fprintf('\n===== FFT ANALYSIS =====\n');
 fprintf('FFT Error h1 = %.6f\n', fft_error_h1);
 fprintf('FFT Error h4 = %.6f\n', fft_error_h4);
-
 
 %% =====================================================
 %  FFT FIGURE
@@ -286,7 +265,6 @@ legend('$FFT(h_1)$','$FFT(\hat{h}_1)$',...
 
 grid on
 
-
 subplot(2,1,2)
 
 plot(f,abs(FFT_real_h4),'k','LineWidth',2)
@@ -302,7 +280,6 @@ legend('$FFT(h_4)$','$FFT(\hat{h}_4)$',...
 
 grid on
 
-
 % Display results in a dialog window
 
 mensaje = sprintf([ ...
@@ -316,19 +293,16 @@ opcion = questdlg(mensaje, ...
                   'Resultados del Modelo y Visualización', ...
                   'Sí', 'No', 'No');
 
-
 % AnalyzeNetwork
 
 if strcmpi(opcion, 'Sí')
     analyzeNetwork(net);
 end
 
-
 % Extract and convert states to vectors for plotting
 
 hidden = extractdata(HiddenState{1}); % hidden is 150x1
 cell = extractdata(CellState{1});     % cell is also 150x1
-
 
 % Plot states
 
@@ -341,7 +315,6 @@ title('HiddenState (LSTM Hidden State)');
 xlabel('LSTM Unit');
 ylabel('Value');
 grid on;
-
 
 subplot(2,1,2);
 
