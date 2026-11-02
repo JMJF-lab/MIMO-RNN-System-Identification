@@ -6,7 +6,7 @@ disp('>> Monitor started. Training LSTM. (aprox. 20 min)...');
 
 try
     % 2. Run the LSTM training script.
-    aa_LSTM_training; 
+    LSTM_training; 
     disp('>> ¡Training completed successfully!');
 catch ME
     disp(['>> Error: ', ME.message]);
