@@ -3,7 +3,7 @@ close all
 clc
 rng(42,'twister');
 
-%% ================== DATA ==================
+%% ================== DATA LOADING AND PREPROCESSING ==================
 load dataset_entreno.mat
 [datasetn,C,S] = normalize(dataset);
 XTrain = datasetn(:,1:2)';
@@ -14,7 +14,7 @@ dataset_validation_n = normalize(dataset,"center",C,"scale",S);
 XValidation = dataset_validation_n(:,1:2)';
 TValidation = dataset_validation_n(:,3:4)';
 
-%% ================== BEST PARAMETERS ==================
+%% ================== OPTIMAL HYPERPARAMETERS ==================
 spectral_radius = 0.85;
 leaking_rate    = 0.35;
 input_scaling   = 0.20;
@@ -23,7 +23,7 @@ density         = 0.01;
 N_res           = 50;
 washout         = 50;
 
-%% ================== RESERVOIR ==================
+%% ================== RESERVOIR INITIALIZATION ==================
 Win_base = rand(N_res, (2 + 2 + 1)) - 0.5;
 W_base   = sprandn(N_res, N_res, density);
 W_base   = full(W_base);
@@ -32,7 +32,7 @@ W_base   = W_base / rhoW;
 W        = spectral_radius * W_base;
 Win      = input_scaling * Win_base;
 
-%% ================== TRAINING ==================
+%% ================== RESERVOIR STATE GENERATION AND READOUT TRAINING ==================
 tic;
 x = zeros(N_res,1);
 T = size(XTrain,2);
@@ -43,8 +43,8 @@ for t = 1:T
     u_aug = [XTrain(:,t); Y_prev; 1];
     x = (1-leaking_rate)*x + leaking_rate*tanh(Win*u_aug + W*x);
     X(:,t) = x;
-    Y_prev = TTrain(:,t);          % Teacher Forcing correcto: y(t-1) para t+1
-end
+    Y_prev = TTrain(:,t);          % Teacher forcing: use the measured output at time t
+end                                % as the previous output for the next time step.
 
 X_aug = [X;
          XTrain;
@@ -61,21 +61,23 @@ fprintf('ESN training time: %.2f s\n', trainingTime);
 T_len = size(XValidation,2);
 x = zeros(N_res,1);
 Y_pred_all = zeros(2,T_len);
-Y_prev = zeros(2,1);               % Inicializar y(0) = 0
+Y_prev = zeros(2,1);               % Initialize the previous output as y(0) = 0.
 
 for t = 1:T_len
-    % Vector de entrada con la salida real del paso anterior y(t-1)
+    % Construct the augmented input using the measured
+    % output from the previous time step, y(t-1).
     u_aug = [XValidation(:,t); Y_prev; 1];
     
     x = (1-leaking_rate)*x + leaking_rate*tanh(Win*u_aug + W*x);
     y = Wout * [x; XValidation(:,t); 1];
     Y_pred_all(:,t) = y;
     
-    % Actualizar Y_prev para Teacher Forcing en validación
+    % Update the previous output using the measured target
+    % to implement teacher forcing during validation.
     Y_prev = TValidation(:,t); 
 end
 
-%% ================== DENORMALIZATION ==================
+%% ================== OUTPUT DENORMALIZATION ==================
 Y_pred = zeros(2,T_len);
 Y_true = zeros(2,T_len);
 Y_pred(1,:) = Y_pred_all(1,:)*S(3) + C(3);
@@ -83,16 +85,16 @@ Y_pred(2,:) = Y_pred_all(2,:)*S(4) + C(4);
 Y_true(1,:) = TValidation(1,:)*S(3) + C(3);
 Y_true(2,:) = TValidation(2,:)*S(4) + C(4);
 
-%% ================== WASHOUT ==================
+%% ================== WASHOUT TRANSIENT REMOVAL ==================
 Y_pred = Y_pred(:,washout:end);
 Y_true = Y_true(:,washout:end);
 
-%% ================== ERRORS ==================
+%% ================== PREDICTION ERRORS ==================
 err = Y_true - Y_pred;
 err_h1 = Y_true(1,:) - Y_pred(1,:);
 err_h4 = Y_true(2,:) - Y_pred(2,:);
 
-%% ================== GLOBAL METRICS ==================
+%% ================== GLOBAL PERFORMANCE METRICS ==================
 mse   = mean(err(:).^2);
 rmse  = sqrt(mse);
 mae   = mean(abs(err(:)));
@@ -100,7 +102,7 @@ medae = median(abs(err(:)));
 r2    = 1 - sum(err(:).^2) / sum((Y_true(:)-mean(Y_true(:))).^2);
 da    = mean(sign(diff(Y_true(:))) == sign(diff(Y_pred(:))))*100;
 
-%% ================== h1 ==================
+%% ================== PERFORMANCE METRICS – OUTPUT h1 ==================
 mse_h1   = mean(err_h1.^2);
 rmse_h1  = sqrt(mse_h1);
 mae_h1   = mean(abs(err_h1));
@@ -108,7 +110,7 @@ medae_h1 = median(abs(err_h1));
 r2_h1    = 1 - sum(err_h1.^2) / sum((Y_true(1,:) - mean(Y_true(1,:))).^2);
 da_h1    = mean(sign(diff(Y_true(1,:))) == sign(diff(Y_pred(1,:))))*100;
 
-%% ================== h4 ==================
+%% ================== PERFORMANCE METRICS – OUTPUT h4 ==================
 mse_h4   = mean(err_h4.^2);
 rmse_h4  = sqrt(mse_h4);
 mae_h4   = mean(abs(err_h4));
@@ -116,7 +118,7 @@ medae_h4 = median(abs(err_h4));
 r2_h4    = 1 - sum(err_h4.^2) / sum((Y_true(2,:) - mean(Y_true(2,:))).^2);
 da_h4    = mean(sign(diff(Y_true(2,:))) == sign(diff(Y_pred(2,:))))*100;
 
-%% ================== RESULTS ==================
+%% ================== VALIDATION RESULTS ==================
 fprintf('\n===== VALIDATION =====\n');
 fprintf('\n=== h1 ===\n');
 fprintf('RMSE: %.6f | MAE: %.6f | MedAE: %.6f | R2: %.6f | DA: %.2f%%\n', ...
@@ -125,7 +127,7 @@ fprintf('\n=== h4 ===\n');
 fprintf('RMSE: %.6f | MAE: %.6f | MedAE: %.6f | R2: %.6f | DA: %.2f%%\n', ...
     rmse_h4, mae_h4, medae_h4, r2_h4, da_h4);
 
-%% ================== FFT ==================
+%% ================== FREQUENCY-DOMAIN ANALYSIS ==================
 FFT_real_h1  = fft(Y_true(1,:));
 FFT_pred_h1  = fft(Y_pred(1,:));
 fft_error_h1 = norm(abs(FFT_real_h1)-abs(FFT_pred_h1)) / norm(abs(FFT_real_h1));
@@ -138,5 +140,5 @@ fprintf('\n===== FFT ANALYSIS =====\n');
 fprintf('FFT Error h1 = %.6f\n', fft_error_h1);
 fprintf('FFT Error h4 = %.6f\n', fft_error_h4);
 
-%% ================== SAVE ==================
+%% ================== MODEL EXPORT ==================
 save('esn_best_model.mat', 'Wout', 'Win', 'W', 'C', 'S', 'leaking_rate', 'N_res');
