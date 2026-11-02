@@ -1,21 +1,21 @@
-% 1. Arrancar el monitor de Unix limpio para la LSTM
+% 1. Start a clean Unix monitor for the LSTM.
 [~, pid_str] = system('echo $$'); pid = strtrim(pid_str);
 system(sprintf('while true; do ps -p %s -o rss=; sleep 0.5; done 2>/dev/null > /tmp/lstm_memory_log.txt &', pid));
 system('echo $! > /tmp/lstm_memory_pid');
-disp('>> Monitor iniciado. Entrenando LSTM (aprox. 20 min)...');
+disp('>> Monitor started. Training LSTM. (aprox. 20 min)...');
 
 try
-    % 2. Ejecutar tu script de entrenamiento de la LSTM
+    % 2. Run the LSTM training script.
     aa_LSTM_training; 
-    disp('>> ¡Entrenamiento finalizado con éxito!');
+    disp('>> ¡Training completed successfully!');
 catch ME
     disp(['>> Error: ', ME.message]);
 end
 
-% 3. Detener el monitor y extraer el número máximo con seguridad
+% 3. Stop the monitor and safely extract the maximum value.
 system('kill $(cat /tmp/lstm_memory_pid) 2>/dev/null; rm -f /tmp/lstm_memory_pid');
 
-% Leer el archivo de log línea por línea en MATLAB
+% Read the log file line by line in MATLAB.
 fid = fopen('/tmp/lstm_memory_log.txt', 'r');
 if fid ~= -1
     raw_data = textscan(fid, '%f');
@@ -29,8 +29,8 @@ if fid ~= -1
         fprintf('>> LSTM Peak Training Memory (Unix RSS): %.2f MB\n', peak_mb);
         fprintf('========================================\n');
     else
-        disp('>> El log está vacío.');
+        disp('>> The log file is empty.');
     end
 else
-    disp('>> No se pudo abrir el archivo de log.');
+    disp('>> Unable to open the log file.');
 end
