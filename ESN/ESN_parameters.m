@@ -5,4 +5,4 @@ if exist('bias_out', 'var')
     total_params = total_params + numel(bias_out);
 end
 
-fprintf('>> Parámetros exactos (ESN - entrenados): %d\n', total_params);
+fprintf('>> Exact Parameters (ESN – Trained): %d\n', total_params);
