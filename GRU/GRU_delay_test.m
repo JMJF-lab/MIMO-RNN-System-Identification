@@ -165,7 +165,7 @@ mensaje = sprintf([ ...
     mse_val1, rmse_val1, mae_val1, medae_val1, r2_val1, ...
     mse_val2, rmse_val2, mae_val2, medae_val2, r2_val2);
 
-opcion = questdlg(mensaje, 'Resultados del Modelo', 'Sí', 'No', 'No');
-if strcmpi(opcion, 'Sí')
+opcion = questdlg(mensaje, 'Model Results', 'Yes', 'No', 'No');
+if strcmpi(opcion, 'Yes')
     analyzeNetwork(net);
 end
