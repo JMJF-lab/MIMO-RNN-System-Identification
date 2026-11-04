@@ -2,12 +2,12 @@
 [~, pid_str] = system('echo $$'); pid = strtrim(pid_str);
 system(sprintf('while true; do ps -p %s -o rss=; sleep 0.5; done 2>/dev/null > /tmp/elman_memory_log.txt &', pid));
 system('echo $! > /tmp/elman_memory_pid');
-disp('>> Monitor iniciado. Entrenando Elman...');
+disp('>> Monitor started. Training Elman...');
 
 try
     % 2. Run your Elman training script
     aa_entrenar_Elman; 
-    disp('>> ¡Entrenamiento de Elman finalizado con éxito!');
+    disp('>> ¡Elman training completed successfully!');
 catch ME
     disp(['>> Error: ', ME.message]);
 end
