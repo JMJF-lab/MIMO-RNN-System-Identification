@@ -23,4 +23,4 @@ for r = 1:numel(net.b)
     end
 end
 
-fprintf('>> Parámetros exactos (Elman): %d\n', total_params);
+fprintf('>> Exact Elman Parameters: %d\n', total_params);
