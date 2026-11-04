@@ -7,4 +7,4 @@ if isprop(net, 'Learnables') || isfield(net, 'Learnables')
     end
 end
 
-fprintf('>> Parámetros exactos (LSTM): %d\n', total_params);
+fprintf('>> Exact LSTM Parameters: %d\n', total_params);
