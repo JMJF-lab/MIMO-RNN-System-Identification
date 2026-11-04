@@ -1,21 +1,21 @@
-% 1. Arrancar el monitor de Unix limpio para Elman
+% 1. Start the clean Unix monitor for Elman
 [~, pid_str] = system('echo $$'); pid = strtrim(pid_str);
 system(sprintf('while true; do ps -p %s -o rss=; sleep 0.5; done 2>/dev/null > /tmp/elman_memory_log.txt &', pid));
 system('echo $! > /tmp/elman_memory_pid');
 disp('>> Monitor iniciado. Entrenando Elman...');
 
 try
-    % 2. Ejecutar tu script de entrenamiento de Elman
+    % 2. Run your Elman training script
     aa_entrenar_Elman; 
     disp('>> ¡Entrenamiento de Elman finalizado con éxito!');
 catch ME
     disp(['>> Error: ', ME.message]);
 end
 
-% 3. Detener el monitor y extraer el número máximo con seguridad
+% 3. Stop the monitor and safely extract the maximum value
 system('kill $(cat /tmp/elman_memory_pid) 2>/dev/null; rm -f /tmp/elman_memory_pid');
 
-% Leer el archivo de log línea por línea en MATLAB
+% Read the log file line by line in MATLAB
 fid = fopen('/tmp/elman_memory_log.txt', 'r');
 if fid ~= -1
     raw_data = textscan(fid, '%f');
@@ -29,12 +29,12 @@ if fid ~= -1
         fprintf('>> Elman Peak RSS (MATLAB) (MB): %.2f MB\n', peak_mb);
         fprintf('========================================\n');
     else
-        % Fallback de seguridad midiendo el proceso actual
+        % Safety fallback by measuring the current process
         pid = feature('getpid');
         [~, cmdout] = system(sprintf('ps -o rss= -p %d', pid));
         peak_mb = str2double(strtrim(cmdout)) / 1024;
         fprintf('>> Elman Current Process Memory (RSS): %.2f MB\n', peak_mb);
     end
 else
-    disp('>> No se pudo abrir el archivo de log.');
+    disp('>>  Could not open the log file.');
 end
