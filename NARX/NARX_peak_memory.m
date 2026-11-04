@@ -2,7 +2,7 @@
 [~, pid_str] = system('echo $$'); pid = strtrim(pid_str);
 system(sprintf('while true; do ps -p %s -o rss=; sleep 0.5; done 2>/dev/null > /tmp/narx_memory_log.txt &', pid));
 system('echo $! > /tmp/narx_memory_pid');
-disp('>> Monitor iniciado. Entrenando NARX...');
+disp('>> Monitor started. Training NARX...');
 
 tic; % Start the training timer.
 try
