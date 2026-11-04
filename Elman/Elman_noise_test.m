@@ -34,15 +34,15 @@ for n = 1:length(noise_levels)
     % ADD NOISE
     %% =====================================================
 
-    % Generar una única realización base para ambos niveles de ruido
+    % Generate a single baseline noise realization for both noise levels
     if n == 1
         noise_base = randn(size(datasetn(:,1:2)));
     end
 
-    % Añadir ruido solo a las entradas p y v
+    % Add noise only to inputs p and v
     XTest = (datasetn(:,1:2) + noise_level * noise_base)';
 
-    % Mantener limpias las salidas reales h1 y h4
+    % Keep the actual outputs h1 and h4 noise-free
     TTest = datasetn(:,3:4)';
 
     %% =====================================================
@@ -50,18 +50,15 @@ for n = 1:length(noise_levels)
     %% =====================================================
 
     uTest = num2cell(XTest,1);
-
     yTest = elm_net(uTest);
-
     yTest_mat = cell2mat(yTest);
-
+    
     %% =====================================================
     % DENORMALIZATION
     %% =====================================================
 
     YTest(:,1) = yTest_mat(1,:)' * S(3) + C(3);
     YTest(:,2) = yTest_mat(2,:)' * S(4) + C(4);
-
     TTest_denorm(:,1) = TTest(1,:)' * S(3) + C(3);
     TTest_denorm(:,2) = TTest(2,:)' * S(4) + C(4);
 
