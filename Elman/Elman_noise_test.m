@@ -17,7 +17,6 @@ load dataset_test.mat
 noise_levels = [0.01, 0.05];
 
 for n = 1:length(noise_levels)
-
     noise_level = noise_levels(n);
 
     fprintf('\n==============================\n');
