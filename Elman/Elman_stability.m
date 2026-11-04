@@ -73,9 +73,7 @@ fprintf('W_rec size         = %d x %d\n',size(W_rec,1),size(W_rec,2));
 % Initial context is set to zero for the local trajectory analysis.
 
 context = zeros(N_state,1);
-
 rho_all = zeros(T_len,1);
-
 eig_all = zeros(N_state,T_len);
 
 %% ================== STATE TRAJECTORY ==================
@@ -83,11 +81,9 @@ eig_all = zeros(N_state,T_len);
 for t = 1:T_len
 
     %% ---------- Current input ----------
-
     u = XValidation(:,t);
 
     %% ---------- Current hidden state ----------
-
     z = W_in*u + W_rec*context + b;
 
     h = tansig(z);
@@ -110,9 +106,7 @@ for t = 1:T_len
     %% ---------- Eigenvalues ----------
 
     lambda = eig(A);
-
     eig_all(:,t) = lambda;
-
     rho_all(t) = max(abs(lambda));
 
     %% ---------- Update context ----------
@@ -124,14 +118,12 @@ end
 %% ================== STABILITY METRICS ==================
 
 rho_eff = rho_all;
-
 mean_rho   = mean(rho_eff);
 std_rho    = std(rho_eff);
 median_rho = median(rho_eff);
 p95_rho    = prctile(rho_eff,95);
 max_rho    = max(rho_eff);
 min_rho    = min(rho_eff);
-
 stable_percentage = mean(rho_eff < 1)*100;
 unstable_percentage = mean(rho_eff >= 1)*100;
 
