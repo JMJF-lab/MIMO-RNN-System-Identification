@@ -7,4 +7,4 @@ if isprop(net, 'Learnables') || isfield(net, 'Learnables')
     end
 end
 
-fprintf('>> Parámetros exactos (GRU): %d\n', total_params);
+fprintf('>> Exact GRU Parameters: %d\n', total_params);
