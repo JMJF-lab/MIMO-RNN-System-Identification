@@ -8,40 +8,40 @@ load C
 load S
 load dataset_test.mat
 
-% Normalizar con los parametros del entrenamiento
+% Normalize using the training parameters
 datasetn = normalize(dataset, "center", C, "scale", S);
 
 noise_levels = [0.01, 0.05];
 inicio = 1;
 
-% Misma base de ruido para ambos niveles y las diez semillas
+% Same noise realization for both levels and all ten random seeds
 noise_base = randn(size(datasetn(:,1:2)));
 
 for n = 1:length(noise_levels)
     noise_level = noise_levels(n);
 
-    % Ruido solo en las entradas p y v
+    % Noise applied only to inputs p and v
     XTest = datasetn(inicio:end,1:2) ...
         + noise_level * noise_base(inicio:end,:);
 
-    % Objetivos limpios
+   % Clean targets
     TTest = datasetn(inicio:end,3:4);
 
-    % Prediccion
+    % Prediction
     YTestn = minibatchpredict(net, XTest, ...
         MiniBatchSize=1, UniformOutput=false);
 
-    % Desnormalizar predicciones
+    % Denormalize predictions
     YTest = zeros(size(TTest));
     YTest(:,1) = YTestn{1}(:,1) * S(3) + C(3);
     YTest(:,2) = YTestn{1}(:,2) * S(4) + C(4);
 
-    % Desnormalizar objetivos limpios
+    % Denormalize clean targets
     TTest_desnorm = zeros(size(TTest));
     TTest_desnorm(:,1) = TTest(:,1) * S(3) + C(3);
     TTest_desnorm(:,2) = TTest(:,2) * S(4) + C(4);
 
-    % Metricas h1
+    % h1 metrics
     err_h1 = TTest_desnorm(:,1) - YTest(:,1);
     mse_h1 = mean(err_h1.^2);
     rmse_h1 = sqrt(mse_h1);
@@ -53,7 +53,7 @@ for n = 1:length(noise_levels)
     da_h1 = mean(sign(diff(TTest_desnorm(:,1))) == ...
         sign(diff(YTest(:,1)))) * 100;
 
-    % Metricas h4
+    % h4 metrics
     err_h4 = TTest_desnorm(:,2) - YTest(:,2);
     mse_h4 = mean(err_h4.^2);
     rmse_h4 = sqrt(mse_h4);
@@ -73,7 +73,7 @@ for n = 1:length(noise_levels)
         'MedAE=%.4f | R2=%.4f | DA=%.2f%%\n'], ...
         mse_h4, rmse_h4, mae_h4, medae_h4, r2_h4, da_h4);
 
-    % Grafica de predicciones y objetivos limpios
+    % Plot predictions and clean targets
     figure
     plot(YTest(:,1), 'r', 'LineWidth', 1);
     hold on
