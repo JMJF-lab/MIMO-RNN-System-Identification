@@ -150,19 +150,12 @@ for n = 1:length(noise_levels)
     %% =====================================================
 
     mse_h1 = mean((TTest_denorm(:,1)-YTest(:,1)).^2);
-
     rmse_h1 = sqrt(mse_h1);
-
     mae_h1 = mean(abs(TTest_denorm(:,1)-YTest(:,1)));
-
     ss_res = sum((TTest_denorm(:,1)-YTest(:,1)).^2);
-
     ss_tot = sum((TTest_denorm(:,1)-mean(TTest_denorm(:,1))).^2);
-
     r2_h1 = 1 - ss_res/ss_tot;
-
     medae_h1 = median(abs(TTest_denorm(:,1)-YTest(:,1)));
-
     da_h1 = mean( ...
         sign(diff(TTest_denorm(:,1))) == ...
         sign(diff(YTest(:,1))) ...
@@ -173,19 +166,12 @@ for n = 1:length(noise_levels)
     %% =====================================================
 
     mse_h4 = mean((TTest_denorm(:,2)-YTest(:,2)).^2);
-
     rmse_h4 = sqrt(mse_h4);
-
     mae_h4 = mean(abs(TTest_denorm(:,2)-YTest(:,2)));
-
     ss_res = sum((TTest_denorm(:,2)-YTest(:,2)).^2);
-
     ss_tot = sum((TTest_denorm(:,2)-mean(TTest_denorm(:,2))).^2);
-
     r2_h4 = 1 - ss_res/ss_tot;
-
     medae_h4 = median(abs(TTest_denorm(:,2)-YTest(:,2)));
-
     da_h4 = mean( ...
         sign(diff(TTest_denorm(:,2))) == ...
         sign(diff(YTest(:,2))) ...
