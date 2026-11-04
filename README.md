@@ -1,4 +1,6 @@
 # A Unified Comparative Framework for Nonlinear MIMO System Identification Using Recurrent Neural Network Architectures
+[![ORCID](https://img.shields.io/badge/ORCID-0009--0008--0350--4278-A6CE39?logo=orcid&logoColor=white)](https://orcid.org/0009-0008-0350-4278)
+
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23220104.svg)](https://doi.org/10.5281/zenodo.23220104)
 
 ## Overview
