@@ -1,5 +1,5 @@
 %% ==========================
-% Script ELMAN con ruido 1% y 5%
+% ELMAN script with 1% and 5% noise
 %% ==========================
 clear
 close all
@@ -11,7 +11,7 @@ load S
 load dataset_test.mat
 
 %% =====================================================
-%  NIVELES DE RUIDO
+% NOISE LEVELS
 %% =====================================================
 
 noise_levels = [0.01, 0.05];
@@ -25,13 +25,13 @@ for n = 1:length(noise_levels)
     fprintf('==============================\n');
 
     %% =====================================================
-    %  NORMALIZACIÓN
+    % NORMALIZATION
     %% =====================================================
 
     datasetn = normalize(dataset,"center",C,"scale",S);
 
     %% =====================================================
-    %  AÑADIR RUIDO
+    % ADD NOISE
     %% =====================================================
 
     % Generar una única realización base para ambos niveles de ruido
@@ -46,7 +46,7 @@ for n = 1:length(noise_levels)
     TTest = datasetn(:,3:4)';
 
     %% =====================================================
-    %  PREDICCIÓN ELMAN
+    % ELMAN PREDICTION
     %% =====================================================
 
     uTest = num2cell(XTest,1);
@@ -56,7 +56,7 @@ for n = 1:length(noise_levels)
     yTest_mat = cell2mat(yTest);
 
     %% =====================================================
-    %  DESNORMALIZACIÓN
+    % DENORMALIZATION
     %% =====================================================
 
     YTest(:,1) = yTest_mat(1,:)' * S(3) + C(3);
@@ -66,7 +66,7 @@ for n = 1:length(noise_levels)
     TTest_denorm(:,2) = TTest(2,:)' * S(4) + C(4);
 
     %% =====================================================
-    %  FIGURA h1
+    % h1 FIGURE
     %% =====================================================
 
     f1 = figure;
@@ -106,7 +106,7 @@ for n = 1:length(noise_levels)
         '-dpng','-r600');
 
     %% =====================================================
-    %  FIGURA h4
+    % h4 FIGURE
     %% =====================================================
 
     f2 = figure;
@@ -146,7 +146,7 @@ for n = 1:length(noise_levels)
         '-dpng','-r600');
 
     %% =====================================================
-    %  MÉTRICAS h1
+    % h1 METRICS
     %% =====================================================
 
     mse_h1 = mean((TTest_denorm(:,1)-YTest(:,1)).^2);
@@ -169,7 +169,7 @@ for n = 1:length(noise_levels)
     ) * 100;
 
     %% =====================================================
-    %  MÉTRICAS h4
+    % h4 METRICS
     %% =====================================================
 
     mse_h4 = mean((TTest_denorm(:,2)-YTest(:,2)).^2);
@@ -192,7 +192,7 @@ for n = 1:length(noise_levels)
     ) * 100;
 
     %% =====================================================
-    %  MOSTRAR RESULTADOS
+    % DISPLAY RESULTS
     %% =====================================================
 
     fprintf('\n--- h1 ---\n');
