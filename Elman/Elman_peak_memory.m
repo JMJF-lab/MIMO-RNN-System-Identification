@@ -7,7 +7,7 @@ disp('>> Monitor started. Training Elman...');
 try
     % 2. Run your Elman training script
     aa_entrenar_Elman; 
-    disp('>> ¡Elman training completed successfully!');
+    disp('>> Elman training completed successfully!');
 catch ME
     disp(['>> Error: ', ME.message]);
 end
