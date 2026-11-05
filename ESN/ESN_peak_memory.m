@@ -4,7 +4,7 @@ system(sprintf('while true; do ps -p %s -o rss=; sleep 0.5; done 2>/dev/null > /
 system('echo $! > /tmp/esn_memory_pid');
 disp('>> Monitor started. Training ESN...');
 
-tic; % Iniciar cronómetro
+tic; % Start timer
 try
     % 2. Run the ESN training script
     ESN_training; 
