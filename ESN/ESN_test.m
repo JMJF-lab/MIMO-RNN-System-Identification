@@ -109,7 +109,7 @@ fprintf('\n===== FFT ANALYSIS =====\n');
 fprintf('FFT Error h1 = %.6f\n', fft_error_h1);
 fprintf('FFT Error h4 = %.6f\n', fft_error_h4);
 
-%% ================== PLOTS (Q1 STYLE - ESN) ==================
+%% ================== PLOTS ==================
 lw_plot  = 2.8;
 lw_axes  = 2.0;
 fs_axes  = 18;
