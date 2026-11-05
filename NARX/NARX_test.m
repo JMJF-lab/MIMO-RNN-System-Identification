@@ -240,7 +240,7 @@ set(ax2,'FontSize',fs_axes,...
         'TickLabelInterpreter','latex')
 
 %% =====================================================
-%  Fine Q1-style adjustment (compact and aligned)
+% Fine plot adjustments (compact and aligned)
 % =====================================================
 
 drawnow
