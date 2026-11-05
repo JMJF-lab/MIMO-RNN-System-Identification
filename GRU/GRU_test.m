@@ -40,7 +40,7 @@ TTest_desnorm(:,1) = TTest(:,1)*S(3) + C(3); % h1
 TTest_desnorm(:,2) = TTest(:,2)*S(4) + C(4); % h4
 
 %% =====================================================
-%  SINGLE FIGURE – GRU h1 and h4 (FINAL Q1 FORMAT)
+%  SINGLE FIGURE – GRU h1 and h4
 % =====================================================
 
 %% Global visual parameters
