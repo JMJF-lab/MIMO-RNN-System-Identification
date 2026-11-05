@@ -27,7 +27,7 @@ noise_base = randn(size(datasetn(:,1:2)));
 %% EVALUATION
 for n = 1:length(noise_levels)
 
-    ruido = noise_levels(n);
+    noise_level = noise_levels(n);
 
     fprintf('\n====================================\n');
     fprintf('NARX OPEN-LOOP - NOISE %s\n',noise_labels{n});
@@ -35,7 +35,7 @@ for n = 1:length(noise_levels)
 
     % Add noise only to p and v
     datasetn_noise = datasetn;
-    datasetn_noise(:,1:2) = datasetn(:,1:2) + ruido*noise_base;
+    datasetn_noise(:,1:2) = datasetn(:,1:2) + noise_level*noise_base;
 
     XTest = datasetn_noise(:,1:2)';
     TTest = datasetn(:,3:4)';
