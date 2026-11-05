@@ -85,7 +85,7 @@ The scripts:
 
 evaluate the trained models on the test dataset.
 
-Performance is assessed using the metrics employed in the study, including mean absolute error (MAE), root mean squared error (RMSE), median absolute error (MedAE), directional accuracy (DA), and coefficient of determination (\(R^2\)).
+Performance is assessed using the metrics employed in the study, including mean absolute error (MAE), root mean squared error (RMSE), median absolute error (MedAE), directional accuracy (DA), and coefficient of determination (R²).
 
 ### 3. Robustness Analysis
 
