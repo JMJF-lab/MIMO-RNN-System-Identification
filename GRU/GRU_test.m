@@ -115,7 +115,7 @@ set(ax2,'FontSize',fs_axes,'LineWidth',lw_axes,...
     'Box','on','TickLabelInterpreter','latex')
 
 %% =====================================================
-%  Fine journal-style adjustment
+% Fine plot adjustments (compact and aligned)
 %% =====================================================
 
 drawnow
@@ -136,7 +136,6 @@ mse_val1 = mean((TTest_desnorm(inicio:end,1) - YTest(inicio:end,1)).^2);
 rmse_val1 = rmse(TTest_desnorm(inicio:end,1), YTest(inicio:end,1));
 mae_val1  = mean(abs(TTest_desnorm(inicio:end,1) - YTest(inicio:end,1)));
 
-% >>> NEW
 medae_val1 = median(abs(TTest_desnorm(inicio:end,1) - YTest(inicio:end,1)));
 da_val1 = mean(sign(diff(TTest_desnorm(inicio:end,1))) == ...
                 sign(diff(YTest(inicio:end,1))))* 100;
@@ -152,7 +151,6 @@ mse_val2 = mean((TTest_desnorm(inicio:end,2) - YTest(inicio:end,2)).^2);
 rmse_val2 = rmse(TTest_desnorm(inicio:end,2), YTest(inicio:end,2));
 mae_val2  = mean(abs(TTest_desnorm(inicio:end,2) - YTest(inicio:end,2)));
 
-% >>> NEW
 medae_val2 = median(abs(TTest_desnorm(inicio:end,2) - YTest(inicio:end,2)));
 da_val2 = mean(sign(diff(TTest_desnorm(inicio:end,2))) == ...
                 sign(diff(YTest(inicio:end,2))))* 100;
